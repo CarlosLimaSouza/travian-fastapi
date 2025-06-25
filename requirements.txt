@@ -3,3 +3,4 @@ hypercorn==0.14.4
 uvicorn
 pyppeteer
 tzdata
+psutil

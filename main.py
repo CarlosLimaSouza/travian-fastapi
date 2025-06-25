@@ -1,5 +1,6 @@
 import os
 import asyncio
+import psutil
 from browser_utils import get_browser
 from login import do_login
 from lobby import go_to_lobby
@@ -11,6 +12,11 @@ from config import LOOK_RESOURCE, LOOK_BUILDING,APP_ENABLE
 from aldeias import get_villages
 import gc
 from fastapi import FastAPI , BackgroundTasks
+
+def log_memory_usage():
+    process = psutil.Process(os.getpid())
+    mem = process.memory_info().rss / 1024 / 1024  # in MB
+    log(f"Memory usage: {mem:.2f} MB")
 
 app = FastAPI()
 
@@ -46,6 +52,7 @@ async def main():
         browser = await get_browser()
         page = await browser.newPage()
         await page.goto('https://www.travian.com/')
+        log_memory_usage()
 
         if APP_ENABLE:
             log("Aplicativo está habilitado. Iniciando o processo...") 
@@ -54,9 +61,12 @@ async def main():
             return
 
         await do_login(page)
+        log_memory_usage()
         await select_gameworld(page)
+        log_memory_usage()
         gc.collect()
         aldeias = await get_villages(page)
+        log_memory_usage()
         if not aldeias:
             log('Nenhuma aldeia encontrada. Encerrando o processo.')
             return
@@ -73,6 +83,7 @@ async def main():
                 await upgrade_recursos(page)    
             if LOOK_BUILDING: 
                 await upgrade_construcoes(page)
+            log_memory_usage()
     except Exception as e:
         log(f"Erro no main: {e}")
     finally:
