@@ -23,8 +23,8 @@ async def send_notification(background_tasks: BackgroundTasks):
     return {"message": "Task is running in background"}
 
 @app.get("/run")
-async def run_endpoint(background_tasks: BackgroundTasks):
-    background_tasks.add_task(asyncio.create_task, main())
+async def run_endpoint():
+    asyncio.create_task(main())
     return {"message": "Started main() in background"}
 
 @app.get("/")
