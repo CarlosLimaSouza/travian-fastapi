@@ -65,7 +65,7 @@ async def main():
         log(f'aldeias encontradas: {aldeias}')
         
         for aldeia in aldeias:
-            if aldeia["id"] == 36944:
+            if aldeia["id"] == "36944":
                 await page.close()
                 page = await browser.newPage()
                 gc.collect()
