@@ -39,14 +39,15 @@ async def main():
         browser = await get_browser()
         page = await browser.newPage()
         await page.goto('https://www.travian.com/')
-        return {"status": "ok", "message": "Google carregado com sucesso!"}
+
         if APP_ENABLE:
             log("Aplicativo está habilitado. Iniciando o processo...") 
         else:
             log("Aplicativo está desabilitado. Encerrando o processo.")
             return
 
-        # await do_login(page)
+        await do_login(page)
+        return {"status": "ok", "message": "Google carregado com sucesso!"}
         # await select_gameworld(page)
         # gc.collect()
         # aldeias = await get_villages(page)
