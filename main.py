@@ -73,8 +73,8 @@ async def main():
         log(f'aldeias encontradas: {aldeias}')
         
         for aldeia in aldeias:
-            await page.close()
-            page = await browser.newPage()
+            # await page.close()
+            # page = await browser.newPage()
             gc.collect()
 
             log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
