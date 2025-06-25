@@ -39,33 +39,33 @@ async def main():
         browser = await get_browser()
         page = await browser.newPage()
         await page.goto('https://www.travian.com/')
-
+        return {"status": "ok", "message": "Google carregado com sucesso!"}
         if APP_ENABLE:
             log("Aplicativo está habilitado. Iniciando o processo...") 
         else:
             log("Aplicativo está desabilitado. Encerrando o processo.")
             return
 
-        await do_login(page)
-        await select_gameworld(page)
-        gc.collect()
-        aldeias = await get_villages(page)
-        if not aldeias:
-            log('Nenhuma aldeia encontrada. Encerrando o processo.')
-            return
-        log(f'aldeias encontradas: {aldeias}')
+        # await do_login(page)
+        # await select_gameworld(page)
+        # gc.collect()
+        # aldeias = await get_villages(page)
+        # if not aldeias:
+        #     log('Nenhuma aldeia encontrada. Encerrando o processo.')
+        #     return
+        # log(f'aldeias encontradas: {aldeias}')
         
-        for aldeia in aldeias:
-            await page.close()
-            page = await browser.newPage()
-            gc.collect()
+        # for aldeia in aldeias:
+        #     await page.close()
+        #     page = await browser.newPage()
+        #     gc.collect()
 
-            log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
-            await page.goto(aldeia['href'], waitUntil='networkidle0')
-            if LOOK_RESOURCE:
-                await upgrade_recursos(page)    
-            if LOOK_BUILDING: 
-                await upgrade_construcoes(page)
+        #     log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
+        #     await page.goto(aldeia['href'], waitUntil='networkidle0')
+        #     if LOOK_RESOURCE:
+        #         await upgrade_recursos(page)    
+        #     if LOOK_BUILDING: 
+        #         await upgrade_construcoes(page)
     except Exception as e:
         log(f"Erro no main: {e}")
     finally:
