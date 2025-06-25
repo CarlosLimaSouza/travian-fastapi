@@ -65,16 +65,17 @@ async def main():
         log(f'aldeias encontradas: {aldeias}')
         
         for aldeia in aldeias:
-            await page.close()
-            page = await browser.newPage()
-            gc.collect()
+            if aldeia["id"] == 36944:
+                await page.close()
+                page = await browser.newPage()
+                gc.collect()
 
-            log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
-            await page.goto(aldeia['href'], waitUntil='networkidle0')
-            if LOOK_RESOURCE:
-                await upgrade_recursos(page)    
-            if LOOK_BUILDING: 
-                await upgrade_construcoes(page)
+                log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
+                await page.goto(aldeia['href'], waitUntil='networkidle0')
+                if LOOK_RESOURCE:
+                    await upgrade_recursos(page)    
+                if LOOK_BUILDING: 
+                    await upgrade_construcoes(page)
     except Exception as e:
         log(f"Erro no main: {e}")
     finally:
