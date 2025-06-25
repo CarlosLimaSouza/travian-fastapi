@@ -75,6 +75,32 @@ async def main():
 # Função para rodar o main async em thread separada
 # asyncio.run(main())
 
+@app.get("/teste")
+async def teste_endpoint():
+    from pyppeteer import launch
+    browser = None
+    try:
+        browser = await launch(
+            executablePath="/usr/bin/chromium",
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu"
+            ]
+        )
+        page = await browser.newPage()
+        await page.goto("https://www.google.com/")
+        log("[TESTE] Google carregado com sucesso!")
+        return {"status": "ok", "message": "Google carregado com sucesso!"}
+    except Exception as e:
+        log(f"[TESTE] Erro ao abrir Google: {e}")
+        return {"status": "erro", "detail": str(e)}
+    finally:
+        if browser:
+            await browser.close()
+
 
 
 
