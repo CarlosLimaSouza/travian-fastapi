@@ -27,8 +27,8 @@ async def ping():
 async def run_endpoint():
     print("[DEBUG] Endpoint /run chamado. Iniciando thread para run_main...")
     try:
-        run_main()
-        log("Thread run_main finalizada.")
+        await main()
+        log("Thread main finalizada.")
     except Exception as e:
         log(f"Erro ao rodar main: {e}")
 
@@ -69,9 +69,7 @@ async def main():
     await browser.close()  # Fecha o navegador ao final
 
 # Função para rodar o main async em thread separada
-
-def run_main():
-    asyncio.run(main())
+# asyncio.run(main())
 
 
 
