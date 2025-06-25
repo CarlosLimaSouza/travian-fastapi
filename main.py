@@ -33,46 +33,45 @@ async def run_endpoint():
         log(f"Erro ao rodar main: {e}")
 
 
-# async def main():
-#     browser = await get_browser()
-#     page = await browser.newPage()
-#     await page.goto('https://www.travian.com/')
+async def main():
+    browser = await get_browser()
+    page = await browser.newPage()
+    await page.goto('https://www.travian.com/')
 
-#     if APP_ENABLE:
-#         log("Aplicativo está habilitado. Iniciando o processo...") 
-#     else:
-#         log("Aplicativo está desabilitado. Encerrando o processo.")
-#         await browser.close()
-#         return
+    if APP_ENABLE:
+        log("Aplicativo está habilitado. Iniciando o processo...") 
+    else:
+        log("Aplicativo está desabilitado. Encerrando o processo.")
+        await browser.close()
+        return
 
-#     await do_login(page)
-#     await select_gameworld(page)
-#     gc.collect()
-#     aldeias = await get_villages(page)
-#     if not aldeias:
-#         log('Nenhuma aldeia encontrada. Encerrando o processo.')
-#         return
-#     log(f'aldeias encontradas: {aldeias}')
+    await do_login(page)
+    await select_gameworld(page)
+    gc.collect()
+    aldeias = await get_villages(page)
+    if not aldeias:
+        log('Nenhuma aldeia encontrada. Encerrando o processo.')
+        return
+    log(f'aldeias encontradas: {aldeias}')
     
-#     for aldeia in aldeias:
-#         await page.close()
-#         page = await browser.newPage()
-#         gc.collect()
+    for aldeia in aldeias:
+        await page.close()
+        page = await browser.newPage()
+        gc.collect()
 
-#         log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
-#         await page.goto(aldeia['href'], waitUntil='networkidle0')
-#         if LOOK_RESOURCE:
-#             await upgrade_recursos(page)    
-#         if LOOK_BUILDING: 
-#             await upgrade_construcoes(page)
+        log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
+        await page.goto(aldeia['href'], waitUntil='networkidle0')
+        if LOOK_RESOURCE:
+            await upgrade_recursos(page)    
+        if LOOK_BUILDING: 
+            await upgrade_construcoes(page)
 
-#     await browser.close()  # Fecha o navegador ao final
+    await browser.close()  # Fecha o navegador ao final
 
 # Função para rodar o main async em thread separada
 
 def run_main():
-    print("[DEBUG] Iniciando run_main...")
-    # asyncio.run(main())
+    asyncio.run(main())
 
 
 
