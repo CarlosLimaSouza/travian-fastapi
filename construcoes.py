@@ -38,7 +38,7 @@ async def upgrade_construcoes(page):
     if not construcoes_validas:
         log('Nenhuma construção válida para upgrade.')
         return
-    log(f'Construções válidas para upgrade: {construcoes_validas}')
+    # log(f'Construções válidas para upgrade: {construcoes_validas}')
 
     construcao_clicada = False
     for construcao in construcoes_validas:

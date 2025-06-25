@@ -62,7 +62,7 @@ async def main():
         if not aldeias:
             log('Nenhuma aldeia encontrada. Encerrando o processo.')
             return
-        log(f'aldeias encontradas: {aldeias}')
+        # log(f'aldeias encontradas: {aldeias}')
         
         for aldeia in aldeias:
             if aldeia["id"] == "36944":

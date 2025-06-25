@@ -34,7 +34,7 @@ async def upgrade_recursos(page):
     if not recursos_validos:
         log('Nenhum recurso válido para upgrade.')
         return
-    log(f'Recursos válidos para upgrade: {recursos_validos}')
+    # log(f'Recursos válidos para upgrade: {recursos_validos}')
     recurso_clicado = False
     for recurso in recursos_validos:
         try:
