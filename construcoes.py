@@ -51,13 +51,9 @@ async def upgrade_construcoes(page):
                 page = await browser.newPage()
             try:
                 await page.goto(construcao['href'], waitUntil='networkidle0', timeout=25000)
-            except pyppeteer.errors.TimeoutError:
-                log("Timeout while loading the page.")
-            except pyppeteer.errors.NetworkError as e:
-                log(f"Network error: {e}")
+                construcao_clicada = True
             except Exception as e:
                 log(f"Unexpected error: {e}")
-            construcao_clicada = True
             log(f'Construção {converte_gid_para_nome(construcao["gid"])} clicada para upgrade..o nível atual é {construcao["level"]}.')
             break  # Sai do loop após clicar na primeira construção válida
         except Exception as e:

@@ -45,13 +45,9 @@ async def upgrade_recursos(page):
                 page = await browser.newPage()
             try:
                 await page.goto(recurso['href'], waitUntil='networkidle0', timeout=25000)
-            except pyppeteer.errors.TimeoutError:
-                log("Timeout while loading the page.")
-            except pyppeteer.errors.NetworkError as e:
-                log(f"Network error: {e}")
+                recurso_clicado = True
             except Exception as e:
                 log(f"Unexpected error: {e}")
-            recurso_clicado = True
             log(f'Recurso {converte_gid_para_nome(recurso["gid"])} clicado para upgrade..o nível atual é {recurso["level"]}.')
             break  # Sai do loop após clicar no primeiro recurso válido
         except Exception as e:
