@@ -1,118 +1,133 @@
-import os
+# --- START OF FILE main.py ---
+
 import asyncio
-import psutil
+import random
+from logger import log
+from config import (
+    APP_ENABLE,
+    LOOK_RESOURCE,
+    LOOK_BUILDING,
+    MINTIME,
+    MAXTIME
+)
 from browser_utils import get_browser
 from login import do_login
-from lobby import go_to_lobby
 from gameworld import select_gameworld
+from aldeias import get_villages
 from recursos import upgrade_recursos
 from construcoes import upgrade_construcoes
-from logger import log
-from config import LOOK_RESOURCE, LOOK_BUILDING,APP_ENABLE
-from aldeias import get_villages
-import gc
-from fastapi import FastAPI , BackgroundTasks
 
+from fastapi import FastAPI, BackgroundTasks
 
+# --- Configuração do FastAPI ---
 app = FastAPI()
 
-from fastapi import BackgroundTasks
+# Lock para garantir que apenas uma instância do bot seja executada por vez.
+bot_lock = asyncio.Lock()
 
+# --- Funções do Bot Refatoradas ---
 
-@app.post("/send/")
-async def send_notification(background_tasks: BackgroundTasks):
-    background_tasks.add_task(write_log, "Notification sent")
-    return {"message": "Task is running in background"}
-
-@app.get("/run")
-async def run_endpoint():
-    asyncio.create_task(main())
-    return {"message": "Started main() in background"}
-
-@app.get("/")
-async def root():
-    return {"greeting": "Hello, World!", "message": "Welcome to FastAPI!"}
-
-@app.get("/ping")
-async def ping():
-    print("[DEBUG] /ping chamado")
-    return {"status": "ok"}
-
-
-        
-
-
-async def main():
-    browser = None
+async def process_single_village(page, aldeia):
+    """
+    Processa uma única aldeia usando uma página (aba) já existente.
+    """
+    log(f"Processando aldeia: {aldeia['nome']} (ID: {aldeia['id']})")
     try:
+        # Navega para a aldeia específica usando o href dela
+        await page.goto(aldeia['href'], {'waitUntil': 'networkidle0'})
+        log(f"Navegação para a aldeia '{aldeia['nome']}' concluída.")
+
+        if LOOK_RESOURCE:
+            # A função upgrade_recursos já recebe o objeto 'page'
+            await upgrade_recursos(page)
+        
+        if LOOK_BUILDING:
+            # A função upgrade_construcoes já recebe o objeto 'page'
+            await upgrade_construcoes(page)
+
+        log(f"Processamento da aldeia '{aldeia['nome']}' finalizado com sucesso.")
+
+    except Exception as e:
+        log(f"Ocorreu um erro ao processar a aldeia '{aldeia['nome']}': {e}")
+        # A exceção é registrada, mas o loop continua para a próxima aldeia
+
+async def run_bot_session():
+    """
+    Orquestra uma sessão completa do bot:
+    1. Abre o navegador
+    2. Faz login UMA VEZ
+    3. Itera por todas as aldeias
+    4. Fecha o navegador no final
+    """
+    if not APP_ENABLE:
+        log("Aplicativo está desabilitado nas configurações. Encerrando.")
+        return
+
+    browser = None
+    log("Iniciando uma nova sessão do bot...")
+    try:
+        # Etapa 1: Iniciar navegador e fazer login
         browser = await get_browser()
         page = await browser.newPage()
-        await page.goto('https://www.travian.com/')
-
-        if APP_ENABLE:
-            log("Aplicativo está habilitado. Iniciando o processo...") 
-        else:
-            log("Aplicativo está desabilitado. Encerrando o processo.")
-            return
+        await page.goto('https://www.travian.com/', {'waitUntil': 'networkidle0'})
 
         await do_login(page)
         await select_gameworld(page)
-        gc.collect()
+
+        # Etapa 2: Obter a lista de aldeias para processar
         aldeias = await get_villages(page)
         if not aldeias:
-            log('Nenhuma aldeia encontrada. Encerrando o processo.')
+            log("Nenhuma aldeia encontrada. Encerrando a sessão.")
             return
-        # log(f'aldeias encontradas: {aldeias}')
-        
+
+        log(f"Sessão iniciada. {len(aldeias)} aldeias a serem processadas: {[a['nome'] for a in aldeias]}")
+
+        # Etapa 3: Iterar e processar cada aldeia na mesma sessão
         for aldeia in aldeias:
-            if aldeia["id"] == "36944":
-                # await page.close()
-                # page = await browser.newPage()
-                # gc.collect()
+            await process_single_village(page, aldeia)
+            
+            # Pausa aleatória entre o processamento de aldeias
+            tempo_espera = random.randint(MINTIME, MAXTIME)
+            log(f"Pausa de {tempo_espera} segundos antes da próxima tarefa.")
+            await asyncio.sleep(tempo_espera)
+        
+        log("Ciclo completo de todas as aldeias finalizado.")
 
-                log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
-                await page.goto(aldeia['href'], waitUntil='networkidle0')
-                if LOOK_RESOURCE:
-                    await upgrade_recursos(page)    
-                if LOOK_BUILDING: 
-                    await upgrade_construcoes(page)
     except Exception as e:
-        log(f"Erro no main: {e}")
+        log(f"Erro fatal na sessão principal do bot: {e}")
     finally:
-        if browser:
-            await browser.close()  # Fecha o navegador ao final
-
-# Função para rodar o main async em thread separada
-# asyncio.run(main())
-
-@app.get("/teste")
-async def teste_endpoint():
-    from pyppeteer import launch
-    browser = None
-    try:
-        browser = await launch(
-            executablePath="/usr/bin/chromium",
-            headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu"
-            ]
-        )
-        page = await browser.newPage()
-        await page.goto("https://www.google.com/")
-        log("[TESTE] Google carregado com sucesso!")
-        return {"status": "ok", "message": "Google carregado com sucesso!"}
-    except Exception as e:
-        log(f"[TESTE] Erro ao abrir Google: {e}")
-        return {"status": "erro", "detail": str(e)}
-    finally:
+        # Etapa 4: Garantir que o navegador seja fechado no final ou em caso de erro
         if browser:
             await browser.close()
+            log("Sessão do bot encerrada e navegador fechado. Recursos liberados.")
 
+# --- Endpoints da API ---
 
+@app.get("/")
+async def root():
+    return {"message": "Servidor do Bot Travian está no ar."}
 
+@app.get("/ping")
+async def ping():
+    return {"status": "ok"}
 
+@app.get("/run")
+async def run_bot_endpoint(background_tasks: BackgroundTasks):
+    """
+    Endpoint para iniciar a sessão do bot em segundo plano.
+    Usa um lock para evitar execuções concorrentes.
+    """
+    if bot_lock.locked():
+        log("Tentativa de iniciar o bot, mas uma sessão já está em execução.")
+        return {"status": "error", "message": "O bot já está em execução."}
 
+    async with bot_lock:
+        log("Endpoint /run acionado. Adicionando a sessão do bot à fila de tarefas em segundo plano.")
+        background_tasks.add_task(run_bot_session)
+    
+    return {"status": "success", "message": "A sessão do bot foi iniciada em segundo plano."}
 
+# --- Para testes locais (opcional) ---
+if __name__ == "__main__":
+    log("Executando o bot diretamente via script para uma sessão completa.")
+    asyncio.run(run_bot_session())
