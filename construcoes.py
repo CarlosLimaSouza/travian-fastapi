@@ -4,6 +4,7 @@ import asyncio
 from logger import log
 from construcoes_config import valida_upgrade,converte_gid_para_nome
 from browser_utils import get_browser
+import gc
 
 async def upgrade_construcoes(page):
     log('Verificando construções...')
@@ -45,12 +46,12 @@ async def upgrade_construcoes(page):
     for construcao in construcoes_validas:
         try:
             log(f"URL da contrução: {construcao['href']}")
-            if page.isClosed():
-                log("Pagina estava fechada. abrindo nova...")
+            try:
+                await page.close()
                 browser = await get_browser()
                 page = await browser.newPage()
-            try:
-                await page.goto(construcao['href'], waitUntil='networkidle0', timeout=25000)
+                gc.collect()
+                await page.goto(construcao['href'], waitUntil='networkidle0')
                 construcao_clicada = True
             except Exception as e:
                 log(f"Unexpected error: {e}")
@@ -83,7 +84,7 @@ async def upgrade_construcoes(page):
                 log('[TESTE] Botão de upgrade de construção seria clicado agora!')
             else:
                 log(f"URL do botao clicado: {upgrade_url}")
-                await page.goto(upgrade_url, waitUntil='networkidle0', timeout=25000)
+                await page.goto(upgrade_url, waitUntil='networkidle0')
                 # await page.click('.upgradeButtonsContainer .section1 button.build')
                 log('Botão de upgrade de construção clicado!')
         except Exception as e:

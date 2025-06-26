@@ -4,6 +4,7 @@ from config import MINTIME, MAXTIME, TEST_MODE
 from logger import log
 from recursos_config import valida_upgrade,converte_gid_para_nome
 from browser_utils import get_browser
+import gc
 
 async def upgrade_recursos(page):
     log('Verificando recursos...')
@@ -40,11 +41,12 @@ async def upgrade_recursos(page):
     for recurso in recursos_validos:
         try:
             log(f"URL da contrução: {recurso['href']}")
-            if page.isClosed():
-                log("Pagina estava fechada. abrindo nova...")
-                page = await browser.newPage()
             try:
-                await page.goto(recurso['href'], waitUntil='networkidle0', timeout=25000)
+                await page.close()
+                browser = await get_browser()
+                page = await browser.newPage()
+                gc.collect()
+                await page.goto(recurso['href'], waitUntil='networkidle0')
                 recurso_clicado = True
             except Exception as e:
                 log(f"Unexpected error: {e}")
@@ -77,7 +79,7 @@ async def upgrade_recursos(page):
                 log('[TESTE] Botão de upgrade de recurso seria clicado agora!')
             else:
                 log(f"URL do botao clicado: {upgrade_url}")
-                await page.goto(upgrade_url, waitUntil='networkidle0', timeout=25000)
+                await page.goto(upgrade_url, waitUntil='networkidle0')
                 # await page.click('.upgradeButtonsContainer .section1 button.build')
                 log('Botão de upgrade de recurso clicado!')
         except Exception as e:
