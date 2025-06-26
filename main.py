@@ -66,9 +66,9 @@ async def main():
         
         for aldeia in aldeias:
             if aldeia["id"] == "36944":
-                await page.close()
-                page = await browser.newPage()
-                gc.collect()
+                # await page.close()
+                # page = await browser.newPage()
+                # gc.collect()
 
                 log(f'Processando aldeia: {aldeia["nome"]} (ID: {aldeia["id"]})')
                 await page.goto(aldeia['href'], waitUntil='networkidle0')

@@ -47,10 +47,10 @@ async def upgrade_construcoes(page):
         try:
             log(f"URL da contrução: {construcao['href']}")
             try:
-                await page.close()
-                browser = await get_browser()
-                page = await browser.newPage()
-                gc.collect()
+                # await page.close()
+                # browser = await get_browser()
+                # page = await browser.newPage()
+                # gc.collect()
                 await page.goto(construcao['href'], waitUntil='networkidle0')
                 construcao_clicada = True
             except Exception as e:
@@ -83,9 +83,9 @@ async def upgrade_construcoes(page):
             if TEST_MODE:
                 log('[TESTE] Botão de upgrade de construção seria clicado agora!')
             else:
-                log(f"URL do botao clicado: {upgrade_url}")
-                await page.goto(upgrade_url, waitUntil='networkidle0')
-                # await page.click('.upgradeButtonsContainer .section1 button.build')
+                # log(f"URL do botao clicado: {upgrade_url}")
+                # await page.goto(upgrade_url, waitUntil='networkidle0')
+                await page.click('.upgradeButtonsContainer .section1 button.build')
                 log('Botão de upgrade de construção clicado!')
         except Exception as e:
             log(f'Erro ao tentar clicar no botão de upgrade: {e}')
