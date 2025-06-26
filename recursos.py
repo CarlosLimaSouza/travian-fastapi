@@ -76,6 +76,7 @@ async def upgrade_recursos(page):
             if TEST_MODE:
                 log('[TESTE] Botão de upgrade de recurso seria clicado agora!')
             else:
+                log(f"URL do botao clicado: {upgrade_url}")
                 await page.goto(upgrade_url, waitUntil='networkidle0', timeout=25000)
                 # await page.click('.upgradeButtonsContainer .section1 button.build')
                 log('Botão de upgrade de recurso clicado!')
