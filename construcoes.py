@@ -58,7 +58,7 @@ async def upgrade_construcoes(page):
     if construcao_clicada:
         # Espera o botão de upgrade aparecer
         try:
-            await page.waitForSelector('.upgradeButtonsContainer .section1 button.build', timeout=40000)
+            await page.waitForSelector('.upgradeButtonsContainer', timeout=30000)
             if TEST_MODE:
                 log('[TESTE] Botão de upgrade de construção seria clicado agora!')
             else:

@@ -52,7 +52,7 @@ async def upgrade_recursos(page):
 
     if recurso_clicado:
         # Espera o botão de upgrade aparecer
-        await page.waitForSelector('.upgradeButtonsContainer .section1 button.build', timeout=40000)
+        await page.waitForSelector('.upgradeButtonsContainer', timeout=30000)
         if TEST_MODE:
             log('[TESTE] Botão de upgrade de recurso seria clicado agora!')
         else:
