@@ -67,10 +67,23 @@ async def upgrade_construcoes(page):
         # Espera o botão de upgrade aparecer
         try:
             await page.waitForSelector('.upgradeButtonsContainer', timeout=30000)
+            upgrade_url = await page.evaluate('''
+                () => {
+                    const button = document.querySelector('.upgradeButtonsContainer .section1 button.build');
+                    if (!button) return null;
+
+                    const onclick = button.getAttribute('onclick');
+                    if (!onclick) return null;
+
+                    const match = onclick.match(/window\\.location\\.href = '([^']+)'/);
+                    return match ? match[1] : null;
+                }
+            ''')
             if TEST_MODE:
                 log('[TESTE] Botão de upgrade de construção seria clicado agora!')
             else:
-                await page.click('.upgradeButtonsContainer .section1 button.build')
+                await page.goto(upgrade_url, waitUntil='networkidle0', timeout=25000)
+                # await page.click('.upgradeButtonsContainer .section1 button.build')
                 log('Botão de upgrade de construção clicado!')
         except Exception as e:
             log(f'Erro ao tentar clicar no botão de upgrade: {e}')
