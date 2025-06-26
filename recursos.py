@@ -3,6 +3,7 @@ import asyncio
 from config import MINTIME, MAXTIME, TEST_MODE
 from logger import log
 from recursos_config import valida_upgrade,converte_gid_para_nome
+from browser_utils import get_browser
 
 async def upgrade_recursos(page):
     log('Verificando recursos...')
@@ -38,8 +39,18 @@ async def upgrade_recursos(page):
     recurso_clicado = False
     for recurso in recursos_validos:
         try:
-            # Clica no link do recurso
-            await page.goto(recurso['href'], waitUntil='networkidle0')
+            log(f"URL da contrução: {recurso['href']}")
+            if page.isClosed():
+                log("Pagina estava fechada. abrindo nova...")
+                page = await browser.newPage()
+            try:
+                await page.goto(recurso['href'], waitUntil='networkidle0', timeout=25000)
+            except pyppeteer.errors.TimeoutError:
+                log("Timeout while loading the page.")
+            except pyppeteer.errors.NetworkError as e:
+                log(f"Network error: {e}")
+            except Exception as e:
+                log(f"Unexpected error: {e}")
             recurso_clicado = True
             log(f'Recurso {converte_gid_para_nome(recurso["gid"])} clicado para upgrade..o nível atual é {recurso["level"]}.')
             break  # Sai do loop após clicar no primeiro recurso válido

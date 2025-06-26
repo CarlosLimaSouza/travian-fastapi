@@ -3,6 +3,7 @@ from config import MINTIME, MAXTIME, TEST_MODE
 import asyncio
 from logger import log
 from construcoes_config import valida_upgrade,converte_gid_para_nome
+from browser_utils import get_browser
 
 async def upgrade_construcoes(page):
     log('Verificando construções...')
@@ -43,8 +44,19 @@ async def upgrade_construcoes(page):
     construcao_clicada = False
     for construcao in construcoes_validas:
         try:
-            # Clica no link da construção
-            await page.goto(construcao['href'], waitUntil='networkidle0')
+            log(f"URL da contrução: {construcao['href']}")
+            if page.isClosed():
+                log("Pagina estava fechada. abrindo nova...")
+                browser = await get_browser()
+                page = await browser.newPage()
+            try:
+                await page.goto(construcao['href'], waitUntil='networkidle0', timeout=25000)
+            except pyppeteer.errors.TimeoutError:
+                log("Timeout while loading the page.")
+            except pyppeteer.errors.NetworkError as e:
+                log(f"Network error: {e}")
+            except Exception as e:
+                log(f"Unexpected error: {e}")
             construcao_clicada = True
             log(f'Construção {converte_gid_para_nome(construcao["gid"])} clicada para upgrade..o nível atual é {construcao["level"]}.')
             break  # Sai do loop após clicar na primeira construção válida
